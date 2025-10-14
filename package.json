@@ -9,14 +9,10 @@
     "dev": "webpack serve --mode development --open",
     "vercel-build": "webpack --mode production"
   },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.22.0",
     "@babel/preset-env": "^7.22.0",
-    "@babel/preset-react": "^7.22.0",
     "babel-loader": "^9.1.0",
     "css-loader": "^6.8.0",
     "html-webpack-plugin": "^5.5.0",
@@ -25,7 +21,7 @@
     "webpack-cli": "^5.1.0",
     "webpack-dev-server": "^4.15.0"
   },
-  "keywords": ["react", "news", "frontend", "api"],
+  "keywords": ["vanilla-js", "news", "frontend", "api", "html", "css"],
   "author": "KnowFlow",
   "license": "MIT"
 }

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KnowFlow News Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <header class="app-header">
+            <div class="container">
+                <h1 class="app-title">
+                    <i class="fas fa-newspaper"></i>
+                    KnowFlow News Generator
+                </h1>
+                <p class="app-subtitle">
+                    Discover the latest news across your favorite topics
+                </p>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <div class="container">
+                <!-- News Form -->
+                <div class="news-form-container">
+                    <form class="news-form" id="newsForm">
+                        <div class="form-header">
+                            <h2 class="form-title">
+                                <i class="fas fa-filter"></i>
+                                Select News Topics
+                            </h2>
+                            <p class="form-description">
+                                Choose topics to generate personalized news (currently uses the first selected topic)
+                            </p>
+                        </div>
+
+                        <div class="form-controls">
+                            <button type="button" class="select-all-btn" id="selectAllBtn">
+                                <i class="fas fa-check-double"></i>
+                                Select All
+                            </button>
+                            
+                            <div class="selected-count">
+                                <i class="fas fa-info-circle"></i>
+                                <span id="selectedCount">0 topics selected</span>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <div class="option-group">
+                                <label for="limit">Number of Articles:</label>
+                                <select id="limit" class="form-select">
+                                    <option value="5">5 articles</option>
+                                    <option value="10" selected>10 articles</option>
+                                    <option value="15">15 articles</option>
+                                    <option value="20">20 articles</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label for="timeframe">Time Frame:</label>
+                                <select id="timeframe" class="form-select">
+                                    <option value="1d">Last 24 hours</option>
+                                    <option value="3d">Last 3 days</option>
+                                    <option value="7d" selected>Last week</option>
+                                    <option value="30d">Last month</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="topics-grid" id="topicsGrid">
+                            <!-- Topics will be populated by JavaScript -->
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="generate-btn" id="generateBtn" disabled>
+                                <i class="fas fa-magic"></i>
+                                Generate News
+                            </button>
+                        </div>
+
+                        <div class="form-hint" id="formHint" style="display: none;">
+                            <i class="fas fa-hand-pointer"></i>
+                            Please select at least one topic to generate news
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-message" id="errorMessage" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="errorText"></span>
+                </div>
+
+                <!-- News Display -->
+                <div class="news-display-container" id="newsDisplay" style="display: none;">
+                    <!-- News content will be populated by JavaScript -->
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="container">
+                <p>&copy; 2024 KnowFlow. Powered by AI-driven news aggregation.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
