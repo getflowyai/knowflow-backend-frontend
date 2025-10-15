@@ -615,7 +615,7 @@ async function saveNewsToSupabase(newsData, topicName) {
         }));
 
         // Make request to your backend API that will check for duplicates and save to Supabase
-        const response = await fetch('/api/save-explore-news-bulk', {
+        const response = await fetch('/api/save-news', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

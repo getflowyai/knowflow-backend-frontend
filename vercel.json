@@ -7,9 +7,17 @@
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "api/save-news.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/save-news",
+      "dest": "/api/save-news.js"
+    },
     {
       "src": "/bundle.js",
       "dest": "/bundle.js"
