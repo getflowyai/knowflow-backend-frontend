@@ -1,3 +1,6 @@
+// Import CSS
+import './styles.css';
+
 // Topics data
 const TOPICS = [
   'AI',
