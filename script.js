@@ -1,6 +1,28 @@
 // Import CSS
 import './styles.css';
 
+// Supabase configuration will be set in supabase-config.js
+// Make sure to update your Supabase credentials there
+
+// Interest mapping
+const INTEREST_MAPPING = {
+  'AI': '46a4ed1c-0f5a-4775-ad72-28b9ec252000',
+  'Arts': '7b37b1c4-40f7-43fc-864a-a51929d19c91',
+  'Business': 'db0c846d-25bb-457f-8e70-57acbf1d05d8',
+  'Education': '0991f93c-0d4d-4136-bb0d-ea4a6754ae21',
+  'Emerging': '80c53377-ae3d-4734-ab51-896c6109e226',
+  'Entertainment': '15405ba6-2295-4a96-bc5d-d3a942204cbf',
+  'Environment': '09ec6ee8-30d5-4fbd-8adc-f8f8ac73430d',
+  'Food': '550e931e-1bce-4008-944f-a241dd7c1486',
+  'Health': '6c9128ee-cc69-4ba9-8972-d8503d68cae7',
+  'Hobbies': '002ae8cb-0e49-49c3-9588-549490fbad8b',
+  'Lifestyle': '1fbfab3e-bde4-451a-8a96-1659dabade36',
+  'Politics': '1d0e7662-0c24-46ab-b2c1-e1456625ed98',
+  'Sports': '3fd574df-f8c6-4bf3-bbeb-915cdf8cf335',
+  'Technology': 'dfa7bf22-61b5-4b36-a3d4-7ed80d777a12',
+  'Travel': 'f47bd5d0-2961-4bb6-9b0c-a5350a242676'
+};
+
 // Topics data
 const TOPICS = [
   'AI',
@@ -217,6 +239,9 @@ async function fetchNews(selectedTopics, limit = 10, timeframe = '7d') {
                     });
                 });
                 console.log('=== END OF ARTICLES ===');
+                
+                // Save to Supabase explore table
+                await saveNewsToSupabase(data.data, primaryTopic);
             }
             newsData = data.data;
             showNewsDisplay(newsData);
@@ -559,3 +584,47 @@ function handleLinkClick(url) {
 
 // Make handleLinkClick globally available
 window.handleLinkClick = handleLinkClick;
+
+// Function to save news to Supabase explore table
+async function saveNewsToSupabase(newsData, topicName) {
+    try {
+        const interestId = INTEREST_MAPPING[topicName];
+        if (!interestId) {
+            console.error('❌ Interest ID not found for topic:', topicName);
+            return;
+        }
+
+        console.log('💾 Saving news to Supabase for topic:', topicName, 'with interest ID:', interestId);
+
+        // Prepare the data for Supabase
+        const exploreData = {
+            interest_id: interestId,
+            topic_name: topicName,
+            articles_count: newsData.articles?.length || 0,
+            timeframe: newsData.timeframe || '7d',
+            total_articles: newsData.totalArticles || 0,
+            articles_data: newsData.articles || [],
+            generated_at: new Date().toISOString(),
+            created_at: new Date().toISOString()
+        };
+
+        // Make request to your backend API that will save to Supabase
+        const response = await fetch('/api/save-explore', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(exploreData)
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Successfully saved to Supabase:', result);
+        } else {
+            console.error('❌ Failed to save to Supabase:', response.status, response.statusText);
+        }
+
+    } catch (error) {
+        console.error('❌ Error saving to Supabase:', error);
+    }
+}

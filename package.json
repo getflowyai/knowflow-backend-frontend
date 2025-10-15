@@ -29,5 +29,8 @@
     "css"
   ],
   "author": "KnowFlow",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.75.0"
+  }
 }
