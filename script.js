@@ -585,7 +585,7 @@ function handleLinkClick(url) {
 // Make handleLinkClick globally available
 window.handleLinkClick = handleLinkClick;
 
-// Function to save news to Supabase explore table
+// Function to save news articles to Supabase explore_news table with duplicate checking
 async function saveNewsToSupabase(newsData, topicName) {
     try {
         const interestId = INTEREST_MAPPING[topicName];
@@ -594,34 +594,51 @@ async function saveNewsToSupabase(newsData, topicName) {
             return;
         }
 
-        console.log('💾 Saving news to Supabase for topic:', topicName, 'with interest ID:', interestId);
+        if (!newsData.articles || newsData.articles.length === 0) {
+            console.log('⚠️ No articles to save for topic:', topicName);
+            return;
+        }
 
-        // Prepare the data for Supabase
-        const exploreData = {
+        console.log('💾 Processing', newsData.articles.length, 'articles for topic:', topicName, 'with interest ID:', interestId);
+
+        // Prepare articles data for explore_news table
+        const articlesToSave = newsData.articles.map((article, index) => ({
             interest_id: interestId,
-            topic_name: topicName,
-            articles_count: newsData.articles?.length || 0,
-            timeframe: newsData.timeframe || '7d',
-            total_articles: newsData.totalArticles || 0,
-            articles_data: newsData.articles || [],
-            generated_at: new Date().toISOString(),
-            created_at: new Date().toISOString()
-        };
+            title: article.title || 'Untitled Article',
+            link: article.link || '',
+            time: article.time || 'Recently',
+            source: article.source || 'Unknown Source',
+            image: article.image || null,
+            datetime: article.datetime || new Date().toISOString(),
+            article_type: article.articleType || 'regular',
+            sort_order: index
+        }));
 
-        // Make request to your backend API that will save to Supabase
-        const response = await fetch('/api/save-explore', {
+        // Make request to your backend API that will check for duplicates and save to Supabase
+        const response = await fetch('/api/save-explore-news-bulk', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(exploreData)
+            body: JSON.stringify({
+                articles: articlesToSave,
+                topic_name: topicName,
+                interest_id: interestId
+            })
         });
 
         if (response.ok) {
             const result = await response.json();
-            console.log('✅ Successfully saved to Supabase:', result);
+            console.log('✅ Bulk save completed:', {
+                total_processed: result.total_processed,
+                new_articles: result.new_articles,
+                duplicates_found: result.duplicates_found,
+                successfully_saved: result.successfully_saved,
+                errors: result.errors
+            });
         } else {
-            console.error('❌ Failed to save to Supabase:', response.status, response.statusText);
+            const errorData = await response.json();
+            console.error('❌ Failed to save to Supabase:', response.status, errorData);
         }
 
     } catch (error) {
