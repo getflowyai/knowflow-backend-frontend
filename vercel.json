@@ -11,6 +11,14 @@
   ],
   "routes": [
     {
+      "src": "/bundle.js",
+      "dest": "/bundle.js"
+    },
+    {
+      "src": "/bundle.js.LICENSE.txt",
+      "dest": "/bundle.js.LICENSE.txt"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
