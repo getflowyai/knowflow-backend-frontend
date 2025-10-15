@@ -165,6 +165,7 @@ async function fetchNews(selectedTopics, limit = 10, timeframe = '7d') {
     setLoading(true);
     hideError();
     hideNewsDisplay();
+    hideJsonResponse();
     
     try {
         const primaryTopic = selectedTopics[0];
@@ -187,21 +188,40 @@ async function fetchNews(selectedTopics, limit = 10, timeframe = '7d') {
 
         const data = await response.json();
         
+        // Print complete JSON response
+        console.log('=== COMPLETE API JSON RESPONSE ===');
+        console.log(JSON.stringify(data, null, 2));
+        console.log('=== END OF JSON RESPONSE ===');
+        
+        // Display JSON response in UI
+        showJsonResponse(data);
+        
         if (data.success) {
-            console.log('API Response:', data);
+            console.log('API Response Success:', data.success);
             console.log('Articles received:', data.data?.articles?.length);
+            console.log('Total Articles:', data.data?.totalArticles);
+            console.log('Topic:', data.data?.topic);
+            console.log('Timeframe:', data.data?.timeframe);
+            
             if (data.data?.articles) {
+                console.log('=== INDIVIDUAL ARTICLES ===');
                 data.data.articles.forEach((article, index) => {
                     console.log(`Article ${index + 1}:`, {
                         title: article.title,
                         image: article.image,
-                        source: article.source
+                        source: article.source,
+                        link: article.link,
+                        time: article.time,
+                        datetime: article.datetime,
+                        articleType: article.articleType
                     });
                 });
+                console.log('=== END OF ARTICLES ===');
             }
             newsData = data.data;
             showNewsDisplay(newsData);
         } else {
+            console.log('API Response Failed:', data);
             throw new Error(data.message || 'Failed to fetch news');
         }
     } catch (err) {
@@ -254,6 +274,51 @@ function hideNewsDisplay() {
     const newsDisplay = document.getElementById('newsDisplay');
     newsDisplay.style.display = 'none';
 }
+
+function showJsonResponse(data) {
+    const jsonDisplay = document.getElementById('jsonResponse');
+    if (jsonDisplay) {
+        jsonDisplay.innerHTML = `
+            <div class="json-container">
+                <div class="json-header">
+                    <h3><i class="fas fa-code"></i> API JSON Response</h3>
+                    <button class="toggle-json-btn" onclick="window.toggleJsonDisplay && window.toggleJsonDisplay()">
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+                <div class="json-content" id="jsonContent" style="display: none;">
+                    <pre><code>${JSON.stringify(data, null, 2)}</code></pre>
+                </div>
+            </div>
+        `;
+        jsonDisplay.style.display = 'block';
+    }
+}
+
+function hideJsonResponse() {
+    const jsonDisplay = document.getElementById('jsonResponse');
+    if (jsonDisplay) {
+        jsonDisplay.style.display = 'none';
+    }
+}
+
+function toggleJsonDisplay() {
+    const jsonContent = document.getElementById('jsonContent');
+    const toggleBtn = document.querySelector('.toggle-json-btn i');
+    
+    if (jsonContent && toggleBtn) {
+        if (jsonContent.style.display === 'none') {
+            jsonContent.style.display = 'block';
+            toggleBtn.className = 'fas fa-chevron-up';
+        } else {
+            jsonContent.style.display = 'none';
+            toggleBtn.className = 'fas fa-chevron-down';
+        }
+    }
+}
+
+// Make toggleJsonDisplay globally available
+window.toggleJsonDisplay = toggleJsonDisplay;
 
 function createNewsDisplayHTML(data) {
     const formatTimeframe = (timeframe) => {
@@ -415,42 +480,82 @@ function createImageHTML(src, alt) {
         return `
             <div class="image-placeholder">
                 <i class="fas fa-newspaper"></i>
-                <span>No Image</span>
+                <span>No Image Available</span>
             </div>
         `;
+    }
+
+    // Create a unique ID for this image
+    const imageId = 'img_' + Math.random().toString(36).substr(2, 9);
+
+    // Try to use a proxy service for external images
+    let imageSrc = src;
+    if (src.includes('news.google.com') || src.includes('googleusercontent.com')) {
+        // For Google News images, try without proxy first, will fallback in error handler
+        imageSrc = src;
     }
 
     return `
         <div class="image-wrapper">
             <img
-                src="${src}"
+                id="${imageId}"
+                src="${imageSrc}"
                 alt="${alt}"
                 class="article-image"
                 loading="lazy"
-                onerror="handleImageError(this)"
-                onload="handleImageLoad(this)"
+                crossorigin="anonymous"
+                referrerpolicy="no-referrer"
+                onerror="window.handleImageError && window.handleImageError(this)"
+                onload="window.handleImageLoad && window.handleImageLoad(this)"
             />
         </div>
     `;
 }
 
 function handleImageError(img) {
+    console.log('❌ Image failed to load:', img.src);
+    
+    // Check if this is the first attempt (no data-retry attribute)
+    const retryCount = parseInt(img.getAttribute('data-retry') || '0');
+    
+    if (retryCount === 0) {
+        // Try loading without crossorigin first
+        console.log('🔄 Retrying image load without crossorigin...');
+        img.setAttribute('data-retry', '1');
+        img.removeAttribute('crossorigin');
+        img.src = img.src; // Trigger reload
+        return;
+    }
+    
+    // Hide the image after retry failed
     img.style.display = 'none';
+    
+    // Find the wrapper and replace with placeholder
     const wrapper = img.parentElement;
-    wrapper.innerHTML = `
-        <div class="image-placeholder">
-            <i class="fas fa-newspaper"></i>
-            <span>No Image</span>
-        </div>
-    `;
+    if (wrapper && wrapper.classList.contains('image-wrapper')) {
+        wrapper.innerHTML = `
+            <div class="image-placeholder">
+                <i class="fas fa-image"></i>
+                <span>Image blocked by source</span>
+                <small>External images may be restricted</small>
+            </div>
+        `;
+    }
 }
 
 function handleImageLoad(img) {
     console.log('✅ Image loaded successfully:', img.src);
 }
 
+// Make functions globally available
+window.handleImageError = handleImageError;
+window.handleImageLoad = handleImageLoad;
+
 function handleLinkClick(url) {
     if (url) {
         window.open(url, '_blank', 'noopener,noreferrer');
     }
 }
+
+// Make handleLinkClick globally available
+window.handleLinkClick = handleLinkClick;
